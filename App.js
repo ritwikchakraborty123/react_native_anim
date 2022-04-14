@@ -1,104 +1,130 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-  Button,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  useSharedValue,
+  useAnimatedGestureHandler,
   useAnimatedStyle,
-  withTiming,
+  useSharedValue,
   withSpring,
-  cancelAnimation,
 } from 'react-native-reanimated';
 
-const App = () => {
-  const offset = useSharedValue(0);
-  const opacity=useSharedValue(1);
-  const offsettest = useSharedValue(0);
-  const rotation = useSharedValue(0);
-  
-  const animatedStyles = useAnimatedStyle(() => {
-    const rotateDeg=(value)=>{
-      return value+"deg"
-    }
-    return {
-      transform: [{translateX: offset.value},
-        {
-          rotate:rotateDeg(rotation.value)
-        }],
-      opacity:opacity.value
-    };
-  });
-  const animatedStylestest = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: offsettest.value * 255,
-          
-        }
-        
-      ],
-    };
-  });
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  PanGestureHandlerGestureEvent,
+} from 'react-native-gesture-handler';
+
+const SIZE = 100.0;
+const CIRCLE_RADIUS = SIZE * 2;
+
+
+export default function App() {
+  // const translateX = useSharedValue(0);
+  // const translateY = useSharedValue(0);
+
+  // const panGestureEvent = useAnimatedGestureHandler({
+  //   onStart: (event, context) => {
+  //     context.translateX = translateX.value;
+  //     context.translateY = translateY.value;
+  //   },
+  //   onActive: (event, context) => {
+  //     translateX.value = event.translationX + context.translateX;
+  //     translateY.value = event.translationY + context.translateY;
+  //   },
+  //   onEnd: () => {
+  //     const distance = Math.sqrt(translateX.value ** 2 + translateY.value ** 2);
+
+  //     if (distance < CIRCLE_RADIUS + SIZE / 2) {
+  //       translateX.value = withSpring(0);
+  //       translateY.value = withSpring(0);
+  //     }
+  //   },
+  // });
+
+  // const rStyle = useAnimatedStyle(() => {
+  //   return {
+  //     transform: [
+  //       {
+  //         translateX: translateX.value,
+  //       },
+  //       {
+  //         translateY: translateY.value,
+  //       },
+  //     ],
+  //   };
+  // });
+const translateX=useSharedValue(0);
+const translateY=useSharedValue(0);
+const gestureHandler=useAnimatedGestureHandler({
+  onStart:(e,context)=>{
+    context.x=translateX.value
+    context.y=translateY.value
+  },
+  onActive:(e,context)=>{
+    console.log(context.x)
+    console.log(context.y)
+    translateX.value=e.translationX+context.x
+    translateY.value=e.translationY+context.y
+    
+  },
+  onEnd:(e,context)=>{
+    // let distance=Math.sqrt((e.translationX+context.x)**2+(e.translationY+context.y)**2);
+    // console.log(distance)
+    // if(distance>CIRCLE_RADIUS){
+    // }else{
+    //   translateX.value=withSpring(0)
+    //   translateY.value=withSpring(0)
+    // }
+  }
+})
+const styleAnimation= useAnimatedStyle(()=>{
+  return {
+    transform:[{
+      translateX:translateX.value
+    },{
+      translateY:translateY.value
+    }]
+  }
+})
   return (
-    <View>
-      <Animated.View style={[styles.box, animatedStyles]} />
-      <Button onPress={() => 
-        {
-
-        
-        if(offset.value==0){
-        offset.value=withTiming(300,{duration:700});
-        opacity.value=1
-        rotation.value=withSpring(180)
-        }
-        else{
-
-
-          offset.value = withTiming(0,{
-            duration:700
-          })
-          opacity.value=withTiming(0.1,{
-            duration:700
-          })
-          rotation.value=withSpring(0)
-        }
-      }} title="Move" />
-
-      <Animated.View style={[styles.box, animatedStylestest]} />
-      <Button
-        onPress={() => (offsettest.value = withSpring(Math.random()))}
-        title="Move"
-      />
-      <Button
-        onPress={() => {
-          cancelAnimation(offset);
-        }}
-        title="cacel"
-      />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* <View style={styles.container}>
+        <View style={styles.circle}>
+          <PanGestureHandler onGestureEvent={panGestureEvent}>
+            <Animated.View style={[styles.square, rStyle]} />
+          </PanGestureHandler>
+        </View>
+      </View> */}
+      <View style={styles.container}>
+       
+      <PanGestureHandler onGestureEvent={gestureHandler}>
+        <Animated.View style={[styles.square,styleAnimation]}></Animated.View>
+      </PanGestureHandler>
+      </View>
+    </GestureHandlerRootView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  box: {
-    width: 100,
-    height: 100,
-    backgroundColor: 'red',
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  square: {
+    width: SIZE,
+    height: SIZE,
+    backgroundColor: 'rgba(0, 0, 256, 0.5)',
+    borderRadius: 20,
+  },
+  circle: {
+    width: CIRCLE_RADIUS * 2,
+    height: CIRCLE_RADIUS * 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: CIRCLE_RADIUS,
+    borderWidth: 5,
+    borderColor: 'rgba(0, 0, 256, 0.5)',
   },
 });
-export default App;
